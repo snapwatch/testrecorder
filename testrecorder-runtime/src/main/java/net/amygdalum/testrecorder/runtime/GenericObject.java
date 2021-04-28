@@ -19,6 +19,7 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -83,6 +84,29 @@ public abstract class GenericObject {
 		List<String> tries = new ArrayList<>();
 		List<Throwable> suppressed = new ArrayList<>();
 		try {
+			if(clazz.getName().equals("org.hibernate.collection.internal.PersistentSet")) {
+
+				Class sessionClass = Class.forName("org.hibernate.engine.spi.SharedSessionContractImplementor");
+				Constructor<T> constructor = clazz.getDeclaredConstructor(sessionClass, Set.class);
+				try {
+					return accessing(constructor).call(c -> {
+						for (Params params : bestParams(c.getParameterTypes())) {
+							try {
+								return c.newInstance(params.values());
+							} catch (ReflectiveOperationException | RuntimeException e) {
+								suppressed.add(e);
+								tries.add("new " + clazz.getSimpleName() + params.getDescription());
+							}
+						}
+						throw new InstantiationException();
+					});
+				} catch (ReflectiveOperationException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			//note: getDeclaredConstructors() returns collection that has non-deterministic order of elements
+			//for PersistentSet it was often the wrong constructor, so I wrote the hacky solution above
 			for (Constructor<T> constructor : (Constructor<T>[]) clazz.getDeclaredConstructors()) {
 				try {
 					return accessing(constructor).call(c -> {
@@ -101,7 +125,7 @@ public abstract class GenericObject {
 				}
 			}
 			return Instantiations.newInstance(clazz);
-		} catch (RuntimeException | Error e) {
+		} catch (RuntimeException | Error | ClassNotFoundException | NoSuchMethodException e) {
 			suppressed.add(e);
 			tries.add("newConstructorForSerialization(" + clazz.getSimpleName() + ")");
 			String msg = "failed to instantiate " + clazz.getName() + ", tried:\n" + tries.stream()
