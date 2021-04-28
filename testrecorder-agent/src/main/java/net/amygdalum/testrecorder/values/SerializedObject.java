@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import net.amygdalum.testrecorder.types.RoleVisitor;
@@ -76,4 +77,17 @@ public class SerializedObject extends AbstractSerializedReferenceType implements
 		return ValuePrinter.print(this);
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		SerializedObject that = (SerializedObject) o;
+		return Objects.equals(fields, that.fields);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), fields);
+	}
 }

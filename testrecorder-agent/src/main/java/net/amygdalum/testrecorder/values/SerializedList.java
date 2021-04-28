@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import net.amygdalum.testrecorder.types.RoleVisitor;
@@ -157,4 +158,18 @@ public class SerializedList extends AbstractSerializedReferenceType implements S
 		return ValuePrinter.print(this);
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		SerializedList that = (SerializedList) o;
+		return Objects.equals(componentType, that.componentType) &&
+				Objects.equals(list, that.list);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), componentType, list);
+	}
 }

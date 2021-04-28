@@ -5,6 +5,7 @@ import static java.util.Comparator.comparing;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Objects;
 
 import net.amygdalum.testrecorder.types.SerializedReferenceType;
 
@@ -54,4 +55,21 @@ public abstract class AbstractSerializedReferenceType extends AbstractSerialized
 		}
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        AbstractSerializedReferenceType that = (AbstractSerializedReferenceType) o;
+        boolean idEqual = id == that.id;
+        return idEqual &&
+                Arrays.equals(usedTypes, that.usedTypes);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(super.hashCode(), id);
+        result = 31 * result + Arrays.hashCode(usedTypes);
+        return result;
+    }
 }

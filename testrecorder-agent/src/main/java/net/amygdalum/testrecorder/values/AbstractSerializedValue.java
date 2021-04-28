@@ -5,6 +5,7 @@ import static net.amygdalum.testrecorder.util.Types.baseType;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import net.amygdalum.testrecorder.types.SerializedValue;
@@ -48,4 +49,17 @@ public abstract class AbstractSerializedValue implements SerializedValue {
 			.allMatch(value -> satisfiesType(type, value));
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		AbstractSerializedValue that = (AbstractSerializedValue) o;
+		boolean typeEquals = Objects.equals(type, that.type);
+		return typeEquals;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(type);
+	}
 }
